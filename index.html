@@ -85,7 +85,10 @@
                 <div id="promo-info" class="text-[8px] text-green-400 font-bold hidden">* Diskon 10% Aktif (Min. 50rb)</div>
             </div>
             <button onclick="orderViaWA()" class="w-full mt-3 py-2.5 bg-green-600 hover:bg-green-700 text-white text-[11px] font-bold rounded-xl flex items-center justify-center gap-2 transition-all">
-                <i class="fab fa-whatsapp text-sm"></i> Order Sekarang
+                <i class="fab fa-whatsapp text-sm"></i> Order Via WhatsApp
+            </button>
+            <button onclick="window.open('https://t.me/ParydBots')" class="w-full mt-2 py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-[11px] font-bold rounded-xl flex items-center justify-center gap-2 transition-all">
+                <i class="fab fa-telegram-plane text-sm"></i> Hubungi AI Telegram
             </button>
         </div>
 
@@ -223,7 +226,7 @@
             const qty = document.getElementById('qty-input').value;
             const serviceName = select.options[select.selectedIndex].text;
             const price = document.getElementById('total-price').innerText;
-            if(select.value == "0") return Swal.fire('Pilih layanannya dulu yaa..');
+            if(select.value == "0") return Swal.fire('Pilih layanannya dulu Rid!');
             window.open(`https://wa.me/6289687783535?text=Halo Paryds, saya mau joki: ${serviceName} (${qty} Halaman/Item) dengan total ${price}. Bisa dibantu?`);
         }
 
