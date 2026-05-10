@@ -5,338 +5,339 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AI Akademik Paryds</title>
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/4712/4712035.png">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-        :root { --bg-main: #0b0f1a; --bg-side: #0f172a; --text: #e2e8f0; --glass: rgba(30, 41, 59, 0.7); }
-        body { background-color: var(--bg-main); font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text); overflow: hidden; margin: 0; }
-        .glass-effect { background: var(--glass); backdrop-filter: blur(10px); border-right: 1px solid rgba(168, 85, 247, 0.2); }
-        .chat-bubble-user { background: linear-gradient(to right, #9333ea, #db2777); color: white; border-radius: 18px 18px 4px 18px; }
-        .chat-bubble-ai { background: var(--bg-side); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 18px 18px 18px 4px; }
-        #sidebar { transition: transform 0.3s ease; z-index: 50; }
-        @media (max-width: 768px) { 
-            #sidebar { position: fixed; height: 100%; transform: translateX(-100%); width: 280px; }
+        :root { 
+            --bg-deep: #0b0e1a; 
+            --bg-sidebar: #111426; 
+            --accent-purple: #9333ea;
+            --accent-pink: #d946ef;
+            --text-main: #e2e8f0;
+        }
+
+        body { 
+            background-color: var(--bg-deep); 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            color: var(--text-main); 
+            overflow: hidden; 
+        }
+
+        .sidebar-glass { background: var(--bg-sidebar); border-right: 1px solid rgba(255,255,255,0.03); }
+        .card-template { 
+            background: rgba(255, 255, 255, 0.03); 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .card-template:hover { 
+            background: rgba(147, 51, 234, 0.1); 
+            border-color: var(--accent-purple);
+            transform: translateY(-2px);
+        }
+
+        .bubble-ai { 
+            background: rgba(255, 255, 255, 0.03); 
+            border: 1px solid rgba(147, 51, 234, 0.3); 
+            border-radius: 18px;
+            color: #cbd5e1;
+        }
+        .bubble-user { 
+            background: linear-gradient(135deg, #9333ea, #db2777); 
+            border-radius: 18px 18px 4px 18px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(219, 39, 119, 0.3);
+        }
+
+        .suggest-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #94a3b8;
+            transition: all 0.2s;
+        }
+        .suggest-btn:hover {
+            background: rgba(147, 51, 234, 0.2);
+            border-color: var(--accent-purple);
+            color: white;
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(147, 51, 234, 0.5); border-radius: 10px; }
+
+        .status-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; }
+
+        @media (max-width: 768px) {
+            #sidebar { position: fixed; transform: translateX(-100%); z-index: 100; height: 100%; width: 280px; transition: 0.4s; }
             #sidebar.open { transform: translateX(0); }
         }
-        .template-btn { border: 1px solid rgba(168, 85, 247, 0.3); font-size: 10px; transition: all 0.2s; color: white; }
-        .template-btn:hover { background: rgba(168, 85, 247, 0.2); transform: translateY(-2px); }
-        
-        .typing-dot { width: 6px; height: 6px; background: #d946ef; border-radius: 50%; animation: typing 1.4s infinite; }
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typing { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-
-        .online-pulse { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; position: relative; }
-        .online-pulse::after { content: ''; position: absolute; width: 100%; height: 100%; background: #22c55e; border-radius: 50%; animation: pulse 2s infinite; opacity: 0.6; }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.5); opacity: 0; } }
-
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
-<body class="h-screen flex overflow-hidden">
-    <div id="overlay" onclick="toggleMenu()" class="fixed inset-0 bg-black/60 hidden z-40"></div>
+<body class="h-screen flex">
 
-    <aside id="sidebar" class="glass-effect flex flex-col shrink-0 w-64 md:w-72">
-        <div class="p-5 border-b border-white/10 flex justify-between items-center">
-            <h1 class="text-md font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-500">Paryds Academic</h1>
-            <button onclick="toggleMenu()" class="md:hidden text-gray-400"><i class="fas fa-times"></i></button>
-        </div>
-        
-        <div class="p-4 space-y-3">
-            <p class="text-[9px] uppercase tracking-tighter text-pink-500 font-bold opacity-70">Smart Templates</p>
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="useT('Makalah')" class="template-btn p-2 rounded-lg bg-white/5 flex flex-col items-center gap-1">
-                    <i class="fas fa-file-alt text-purple-400 text-sm"></i> Makalah
-                </button>
-                <button onclick="useT('Laporan')" class="template-btn p-2 rounded-lg bg-white/5 flex flex-col items-center gap-1">
-                    <i class="fas fa-flask text-blue-400 text-sm"></i> Laporan
-                </button>
-                <button onclick="useT('PPT')" class="template-btn p-2 rounded-lg bg-white/5 flex flex-col items-center gap-1">
-                    <i class="fas fa-desktop text-pink-400 text-sm"></i> Materi PPT
-                </button>
-                <button onclick="useT('Revisi')" class="template-btn p-2 rounded-lg bg-white/5 flex flex-col items-center gap-1">
-                    <i class="fas fa-check-circle text-green-400 text-sm"></i> Cek Revisi
-                </button>
-            </div>
+    <div id="overlay" onclick="toggleMenu()" class="fixed inset-0 bg-black/60 hidden z-50 backdrop-blur-sm"></div>
+
+    <aside id="sidebar" class="sidebar-glass w-72 flex flex-col shrink-0 overflow-y-auto">
+        <div class="p-8">
+            <h1 class="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">Paryds Academic</h1>
         </div>
 
-        <div class="flex-1 overflow-y-auto px-3 space-y-1" id="history-list"></div>
-
-        <div class="p-4 border-t border-white/10 bg-white/5">
-            <p class="text-[9px] font-bold text-gray-400 mb-2 uppercase">Estimasi Biaya Joki</p>
-            <div class="space-y-2">
-                <select id="service-select" onchange="calcTotal()" class="w-full bg-slate-800 text-[10px] text-white p-2 rounded-lg border border-white/10 focus:outline-none">
-                    <option value="0">Pilih Layanan..</option>
-                    <option value="5000">Revisi Per Lembar - 5rb</option>
-                    <option value="15000">Makalah/Laporan - 15rb</option>
-                    <option value="10000">Materi PPT - 10rb</option>
-                </select>
-                <div class="flex gap-2">
-                    <input type="number" id="qty-input" value="1" min="1" oninput="calcTotal()" class="w-1/3 bg-slate-800 text-[10px] text-white p-2 rounded-lg border border-white/10 focus:outline-none" placeholder="Lembar">
-                    <div class="flex-1 bg-slate-800/50 border border-white/5 rounded-lg flex items-center justify-between px-2">
-                        <span class="text-[9px] text-gray-500 uppercase font-bold">Total</span>
-                        <span id="total-price" class="text-[11px] font-extrabold text-pink-500">Rp 0</span>
-                    </div>
+        <div class="px-6 space-y-6 flex-1">
+            <div>
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-4">Smart Templates</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="useT('Makalah')" class="card-template p-4 rounded-2xl flex flex-col items-center gap-2">
+                        <i class="fas fa-file-alt text-purple-500 text-lg"></i><span class="text-[10px] font-bold">Makalah</span>
+                    </button>
+                    <button onclick="useT('Laporan')" class="card-template p-4 rounded-2xl flex flex-col items-center gap-2">
+                        <i class="fas fa-flask text-blue-400 text-lg"></i><span class="text-[10px] font-bold">Laporan</span>
+                    </button>
+                    <button onclick="useT('PPT')" class="card-template p-4 rounded-2xl flex flex-col items-center gap-2">
+                        <i class="fas fa-desktop text-pink-500 text-lg"></i><span class="text-[10px] font-bold">PPT Materi</span>
+                    </button>
+                    <button onclick="useT('Revisi')" class="card-template p-4 rounded-2xl flex flex-col items-center gap-2">
+                        <i class="fas fa-magic text-green-400 text-lg"></i><span class="text-[10px] font-bold">Revisi</span>
+                    </button>
                 </div>
-                <div id="promo-info" class="text-[8px] text-green-400 font-bold hidden">* Diskon 10% Aktif (Min. 50rb)</div>
             </div>
-            <button onclick="orderViaWA()" class="w-full mt-3 py-2.5 bg-green-600 hover:bg-green-700 text-white text-[11px] font-bold rounded-xl flex items-center justify-center gap-2 transition-all">
-                <i class="fab fa-whatsapp text-sm"></i> Order Via WhatsApp
-            </button>
-            <button onclick="window.open('https://t.me/ParydBots')" class="w-full mt-2 py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-[11px] font-bold rounded-xl flex items-center justify-center gap-2 transition-all">
-                <i class="fab fa-telegram-plane text-sm"></i> Hubungi AI Telegram
-            </button>
+
+            <div id="history-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+
+            <div class="pt-6 border-t border-white/5">
+                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-4">Estimasi Biaya Joki</p>
+                <div class="space-y-3">
+                    <select id="service-select" onchange="calcTotal()" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-[11px] focus:outline-none focus:border-purple-500 text-white">
+                        <option value="0">Pilih Layanan..</option>
+                        <option value="5000">Revisi Per Lembar - 5rb</option>
+                        <option value="15000">Makalah/Laporan - 15rb</option>
+                        <option value="10000">Materi PPT - 10rb</option>
+                    </select>
+                    <div class="flex gap-2">
+                        <input type="number" id="qty-input" value="1" min="1" oninput="calcTotal()" class="w-16 bg-black/40 border border-white/10 rounded-xl p-3 text-center text-[11px] text-white">
+                        <div class="flex-1 bg-purple-500/10 border border-purple-500/20 rounded-xl flex items-center justify-center font-bold text-pink-500 text-xs" id="total-price">Rp 0</div>
+                    </div>
+                    <button onclick="orderViaWA()" class="w-full py-3.5 bg-[#22c55e] hover:bg-[#1db053] text-white text-[11px] font-black rounded-xl flex items-center justify-center gap-2 transition-all">
+                        <i class="fab fa-whatsapp"></i> ORDER VIA WA
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <div class="p-4 border-t border-white/10">
-            <div onclick="toggleSettings()" class="text-[11px] text-gray-500 hover:text-white cursor-pointer text-center py-1">
-                <i class="fas fa-cog mr-1"></i> Pengaturan & Bantuan
-            </div>
+        <div class="p-6 flex gap-2">
+            <button onclick="toggleSettings()" class="flex-1 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-bold uppercase tracking-wider text-gray-400 transition-all"><i class="fas fa-cog mr-2"></i>Setting</button>
+            <button onclick="openAbout()" class="flex-1 py-3 bg-purple-500/10 border border-purple-500/20 rounded-xl text-[10px] font-bold uppercase tracking-wider text-purple-400 transition-all"><i class="fas fa-info-circle mr-2"></i>Info</button>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col min-w-0 h-full relative">
-        <header class="h-14 md:h-16 flex items-center px-4 justify-between border-b border-white/5 bg-[#0b0f1a]/50">
-            <div class="flex items-center gap-3">
-                <button onclick="toggleMenu()" class="md:hidden w-9 h-9 flex items-center justify-center bg-slate-800 rounded-lg text-purple-400">
-                    <i class="fas fa-bars"></i>
-                </button>
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-                        <i class="fas fa-robot text-white text-xs"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-xs font-bold text-white leading-none">AI Paryds</h2>
-                        <div class="flex items-center gap-1 mt-1">
-                            <div class="online-pulse"></div>
-                            <span class="text-[9px] text-green-400 font-medium">Online</span>
-                        </div>
-                    </div>
+    <main class="flex-1 flex flex-col relative overflow-hidden">
+        <header class="h-20 flex items-center px-4 md:px-8 justify-between border-b border-white/5 backdrop-blur-md z-10">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleMenu()" class="md:hidden text-purple-500 text-xl"><i class="fas fa-bars"></i></button>
+                <div class="hidden md:flex items-center gap-3">
+                    <div class="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center shadow-lg"><i class="fas fa-robot text-white"></i></div>
+                    <div><h2 class="text-xs font-black uppercase tracking-widest leading-none">AI PARYDS</h2><div class="flex items-center gap-2 mt-1"><div class="status-dot"></div><span class="text-[9px] text-green-500 font-bold uppercase">Active</span></div></div>
                 </div>
             </div>
-            <button onclick="createNewChat()" class="text-pink-500 hover:text-pink-400 font-bold text-xs px-2">Chat Baru</button>
+
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 bg-white/5 border border-white/10 p-1.5 pr-4 rounded-2xl">
+                    <div id="user-avatar" class="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center border border-white/10 overflow-hidden shrink-0"><i class="fas fa-user text-gray-400 text-xs"></i></div>
+                    <div class="flex flex-col justify-center">
+                        <p id="user-name" class="text-[10px] font-black text-white truncate uppercase tracking-tighter">Guest</p>
+                        <div id="login-wrapper">
+                            <div id="g_id_onload" 
+                                data-client_id="286833777579-obuimabinn4f22cse7hgjh4i7jg73m3o.apps.googleusercontent.com" 
+                                data-callback="handleCredentialResponse" 
+                                data-auto_prompt="false">
+                            </div>
+                            <div class="g_id_signin" data-type="icon" data-shape="circle" data-theme="filled_black" data-size="small"></div>
+                        </div>
+                        <button id="btn-logout" onclick="logout()" class="hidden text-[9px] font-bold text-red-500 hover:text-red-400 uppercase tracking-tighter text-left">Logout</button>
+                    </div>
+                </div>
+                <button onclick="createNewChat()" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-black rounded-xl transition-all uppercase tracking-widest shadow-lg shadow-purple-500/20 shrink-0">Chat Baru</button>
+            </div>
         </header>
 
-        <div id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-10 space-y-5"></div>
-
-       <div class="p-4 bg-[#0b0f1a] pb-safe">
-            <div class="max-w-4xl mx-auto flex items-end gap-2 bg-slate-800/40 p-2 rounded-2xl border border-white/10">
-                <textarea id="user-input" rows="1" placeholder="Tanya sesuatu..." 
-                    class="flex-1 bg-transparent px-3 py-2 text-sm text-white focus:outline-none resize-none min-h-[40px] max-h-[120px] leading-relaxed"
-                    oninput="this.style.height = '';this.style.height = this.scrollHeight + 'px'"></textarea>
-                <button onclick="handleChat()" class="bg-pink-600 hover:bg-pink-500 text-white w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-lg active:scale-95 transition-all mb-0.5">
-                    <i class="fas fa-paper-plane text-xs"></i>
-                </button>
+        <div id="chat-container" class="flex-1 overflow-y-auto p-6 md:p-12">
+            <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-center space-y-8 animate-in fade-in duration-700">
+                <div class="space-y-2">
+                    <h2 id="greeting-text" class="text-4xl md:text-5xl font-extrabold text-white">Halo Guest</h2>
+                    <p class="text-2xl md:text-3xl font-bold text-gray-500">Sebaiknya kita mulai dari mana?</p>
+                </div>
+                <div class="flex flex-wrap justify-center gap-3 max-w-2xl">
+                    <button onclick="quickAsk('Buatkan kerangka makalah tentang ')" class="suggest-btn">📝 Buat Makalah</button>
+                    <button onclick="quickAsk('Bantu saya belajar materi ')" class="suggest-btn">🎓 Bantu belajar</button>
+                    <button onclick="quickAsk('Buat hariku jadi lebih produktif dengan ')" class="suggest-btn">⚡ Lebih produktif</button>
+                    <button onclick="quickAsk('Tulis apa saja tentang ')" class="suggest-btn">✍️ Tulis apa saja</button>
+                </div>
             </div>
-            <p class="text-[8px] text-center text-gray-700 mt-2 font-medium tracking-tight">© 2026 Ahmad Farid Ridho | Smart Academic Assistant</p>
+            <div id="chat-messages" class="space-y-8 hidden"></div>
         </div>
-            <p class="text-[9px] text-center text-gray-700 mt-3 font-medium">© 2026 Ahmad Farid Ridho | Smart Academic Assistant</p>
+
+        <div class="p-6 md:p-10">
+            <div class="max-w-4xl mx-auto flex items-end gap-4 bg-[#161a2e] border border-white/5 p-3 rounded-2xl shadow-2xl">
+                <textarea id="user-input" rows="1" placeholder="Minta AI Paryds..." class="flex-1 bg-transparent px-4 py-3 text-sm text-white focus:outline-none resize-none max-h-40 leading-relaxed"></textarea>
+                <button onclick="handleChat()" class="w-12 h-12 bg-purple-600 hover:bg-purple-500 text-white rounded-xl flex items-center justify-center transition-all"><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <p class="text-[9px] text-center text-gray-600 mt-6 font-bold tracking-[0.4em] uppercase opacity-40">© 2026 Ahmad Farid Ridho | Smart Academic Assistant</p>
         </div>
     </main>
 
-    <div id="modal-settings" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center z-[100] p-4">
-        <div class="bg-slate-900 border border-purple-500/30 w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl">
-            <div class="flex border-b border-white/10">
-                <button onclick="switchTab('p')" id="t-p" class="flex-1 py-4 text-[11px] font-bold text-pink-500 border-b-2 border-pink-500 bg-white/5">PENGATURAN</button>
-                <button onclick="switchTab('b')" id="t-b" class="flex-1 py-4 text-[11px] font-bold text-gray-400">BANTUAN & INFO</button>
-            </div>
-            <div id="c-p" class="p-6 space-y-4">
-                <div class="bg-white/5 p-4 rounded-xl border border-white/5">
-                    <p class="text-[10px] text-gray-400 mb-3 uppercase font-bold tracking-widest">Data Management</p>
-                    <button onclick="clearAllHistory()" class="w-full py-3 bg-red-500/10 text-red-500 rounded-xl text-[11px] font-bold border border-red-500/20 hover:bg-red-500/20 transition-all">HAPUS SEMUA RIWAYAT</button>
+    <div id="modal-about" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center z-[200] p-4">
+        <div class="bg-[#111426] border border-white/10 w-full max-w-md rounded-[2.5rem] p-8 md:p-10 text-center relative overflow-hidden shadow-2xl">
+            <button onclick="closeAbout()" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"><i class="fas fa-times"></i></button>
+            <div class="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-purple-500/20"><i class="fas fa-robot text-white text-3xl"></i></div>
+            <h3 class="text-2xl font-black mb-4 uppercase tracking-tighter text-white">AI PARYDS</h3>
+            <div class="space-y-4 text-left mb-8">
+                <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <p class="text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-1">Deskripsi</p>
+                    <p class="text-[11px] text-gray-300 leading-relaxed">Sistem kecerdasan buatan berbasis LLM yang dirancang khusus untuk membantu mahasiswa dalam mengolah data akademik secara instan.</p>
                 </div>
-                <button onclick="toggleSettings()" class="w-full py-2 bg-slate-800 text-white rounded-xl text-[11px]">TUTUP</button>
-            </div>
-            <div id="c-b" class="hidden p-6 space-y-4">
-                <div class="bg-white/5 p-4 rounded-xl border border-white/5 space-y-2">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-xs">
-                            <i class="fas fa-info-circle"></i>
-                        </div>
-                        <p class="text-[11px] font-bold text-white">Tentang AI Paryds</p>
-                    </div>
-                    <p class="text-[10px] text-gray-400 leading-relaxed">Dirancang oleh Ahmad Farid Ridho untuk membantu urusan akademik kamu jadi lebih gampang, dari nyari materi dan isi lengkap materi...</p>
+                <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <p class="text-[10px] font-bold text-pink-400 uppercase tracking-widest mb-1">Tujuan</p>
+                    <p class="text-[11px] text-gray-300 leading-relaxed">Mempermudah pembuatan struktur karya ilmiah, revisi naskah, hingga otomatisasi pembuatan materi presentasi dengan akurasi tinggi.</p>
                 </div>
-                <div class="space-y-2">
-                    <p class="text-[11px] font-bold text-yellow-500 text-center">Rating Layanan</p>
-                    <div class="flex justify-center gap-4 text-2xl text-gray-600">
-                        <i class="fas fa-star rating-star cursor-pointer" onclick="setRating(1)"></i>
-                        <i class="fas fa-star rating-star cursor-pointer" onclick="setRating(2)"></i>
-                        <i class="fas fa-star rating-star cursor-pointer" onclick="setRating(3)"></i>
-                        <i class="fas fa-star rating-star cursor-pointer" onclick="setRating(4)"></i>
-                        <i class="fas fa-star rating-star cursor-pointer" onclick="setRating(5)"></i>
-                    </div>
-                </div>
-                <button onclick="toggleSettings()" class="w-full py-2 bg-slate-800 text-white rounded-xl text-[11px]">KEMBALI</button>
             </div>
+            <button onclick="giveRating()" class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-3"><i class="fas fa-star text-yellow-300"></i> BERI RATING & FEEDBACK</button>
+            <p class="mt-6 text-[9px] text-gray-500 font-bold uppercase tracking-widest">Developed by Ahmad Farid Ridho</p>
+        </div>
+    </div>
+
+    <div id="modal-settings" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center z-[200] p-4">
+        <div class="bg-[#111426] border border-white/10 w-full max-w-sm rounded-[2rem] p-8 text-center relative">
+            <h3 class="font-black mb-6 uppercase text-sm tracking-widest text-white">Pengaturan</h3>
+            <button onclick="clearAllHistory()" class="w-full py-4 bg-red-500/10 text-red-500 rounded-2xl text-[11px] font-black border border-red-500/20 hover:bg-red-500/20 transition-all mb-4">HAPUS SEMUA RIWAYAT CHAT</button>
+            <button onclick="toggleSettings()" class="w-full py-3 text-gray-500 font-bold text-[11px] uppercase hover:text-white transition-all">Tutup</button>
         </div>
     </div>
 
     <script>
+        // API KEY BARU LU UDAH DI SINI
         const GROQ_API_KEY = "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";
+        
         let currentChatId = Date.now().toString();
         let allChats = JSON.parse(localStorage.getItem('paryd_chats')) || {};
 
-        function toggleMenu() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('overlay').classList.toggle('hidden');
+        function parseJwt(token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            return JSON.parse(window.atob(base64));
         }
 
-        function toggleSettings() {
-            document.getElementById('modal-settings').classList.toggle('hidden');
+        function handleCredentialResponse(response) {
+            const userData = parseJwt(response.credential);
+            localStorage.setItem('paryds_user', JSON.stringify(userData));
+            updateAuthUI(userData);
+            Swal.fire({title: 'Berhasil!', text: `Welcome, ${userData.given_name}`, icon: 'success', background: '#0b0e1a', color: '#fff'});
         }
 
-        function switchTab(t) {
-            const isP = t === 'p';
-            const tp = document.getElementById('t-p');
-            const tb = document.getElementById('t-b');
-            document.getElementById('c-p').classList.toggle('hidden', !isP);
-            document.getElementById('c-b').classList.toggle('hidden', isP);
-            
-            if(isP) {
-                tp.className = "flex-1 py-4 text-[11px] font-bold text-pink-500 border-b-2 border-pink-500 bg-white/5";
-                tb.className = "flex-1 py-4 text-[11px] font-bold text-gray-400";
+        function updateAuthUI(user) {
+            const avatar = document.getElementById('user-avatar');
+            const name = document.getElementById('user-name');
+            const greeting = document.getElementById('greeting-text');
+            const logoutBtn = document.getElementById('btn-logout');
+            const loginWrapper = document.getElementById('login-wrapper');
+
+            if(user) {
+                avatar.innerHTML = `<img src="${user.picture}" class="w-full h-full object-cover">`;
+                name.innerText = user.name;
+                if(greeting) greeting.innerText = `Halo ${user.given_name || user.name}`;
+                loginWrapper.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
             } else {
-                tb.className = "flex-1 py-4 text-[11px] font-bold text-pink-500 border-b-2 border-pink-500 bg-white/5";
-                tp.className = "flex-1 py-4 text-[11px] font-bold text-gray-400";
+                avatar.innerHTML = `<i class="fas fa-user text-gray-400 text-xs"></i>`;
+                name.innerText = "Guest";
+                if(greeting) greeting.innerText = "Halo Guest";
+                loginWrapper.classList.remove('hidden');
+                logoutBtn.classList.add('hidden');
             }
         }
 
-        function calcTotal() {
-            const basePrice = parseInt(document.getElementById('service-select').value);
-            const qty = parseInt(document.getElementById('qty-input').value) || 1;
-            let total = basePrice * qty;
-            const promo = document.getElementById('promo-info');
+        function logout() { localStorage.removeItem('paryds_user'); location.reload(); }
+
+        window.onload = function() {
+            renderH();
+            const savedUser = JSON.parse(localStorage.getItem('paryds_user'));
+            if(savedUser) updateAuthUI(savedUser);
             
-            if(total >= 50000) {
-                total = total * 0.9;
-                promo.classList.remove('hidden');
-            } else {
-                promo.classList.add('hidden');
-            }
-            document.getElementById('total-price').innerText = "Rp " + total.toLocaleString('id-ID');
-        }
-
-        function orderViaWA() {
-            const select = document.getElementById('service-select');
-            const qty = document.getElementById('qty-input').value;
-            const serviceName = select.options[select.selectedIndex].text;
-            const price = document.getElementById('total-price').innerText;
-            if(select.value == "0") return Swal.fire('Pilih layanannya dulu Rid!');
-            window.open(`https://wa.me/6289687783535?text=Halo Paryds, saya mau joki: ${serviceName} (${qty} Halaman/Item) dengan total ${price}. Bisa dibantu?`);
-        }
-
-        function showTyping() {
-            const cont = document.getElementById('chat-container');
-            const div = document.createElement('div');
-            div.id = "typing-indicator";
-            div.className = "flex flex-col items-start";
-            div.innerHTML = `<div class="chat-bubble-ai p-4 flex gap-1 items-center">
-                <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
-            </div>`;
-            cont.appendChild(div);
-            cont.scrollTo({ top: cont.scrollHeight, behavior: 'smooth' });
-        }
-
-        function removeTyping() {
-            const indicator = document.getElementById('typing-indicator');
-            if (indicator) indicator.remove();
-        }
+            // //////////////////////////////////////////////////////
+            // TANDA: JANGAN LUPA UPDATE CLIENT ID DI HTML JUGA (BARIS 119)
+            // //////////////////////////////////////////////////////
+        };
 
         async function handleChat() {
             const input = document.getElementById('user-input');
             const val = input.value.trim();
             if(!val) return;
-            if(!allChats[currentChatId]) allChats[currentChatId] = { title: val.substring(0, 20), messages: [] };
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('chat-messages').classList.remove('hidden');
+            if(!allChats[currentChatId]) allChats[currentChatId] = { title: val.substring(0, 30), messages: [] };
             addMsg(val, 'user');
             allChats[currentChatId].messages.push({ role: "user", content: val });
             input.value = "";
-            showTyping();
             try {
                 const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
                     headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
                     body: JSON.stringify({
                         model: "llama-3.3-70b-versatile",
-                        messages: [{role: "system", content: "Kamu AI Paryds, asisten akademik profesional."}, ...allChats[currentChatId].messages]
+                        messages: [{role: "system", content: "Kamu AI Paryds, asisten akademik cerdas."}, ...allChats[currentChatId].messages]
                     })
                 });
                 const data = await res.json();
-                removeTyping();
                 const aiRes = data.choices[0].message.content;
                 allChats[currentChatId].messages.push({ role: "assistant", content: aiRes });
                 addMsg(aiRes, 'ai');
                 save();
-            } catch(e) { 
-                removeTyping();
-                console.log(e); 
-            }
+            } catch(e) { console.error(e); }
         }
 
         function addMsg(c, s) {
-            const cont = document.getElementById('chat-container');
+            const cont = document.getElementById('chat-messages');
             const d = document.createElement('div');
             d.className = `flex flex-col ${s === 'user' ? 'items-end' : 'items-start'}`;
-            d.innerHTML = `<div class="max-w-[85%] p-4 text-[13px] leading-relaxed ${s === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai prose prose-invert'}">${s === 'ai' ? marked.parse(c) : c}</div>`;
+            d.innerHTML = `<div class="${s === 'user' ? 'bubble-user' : 'bubble-ai'} p-5 px-6 max-w-[85%] text-[13px] leading-relaxed shadow-lg">${s === 'ai' ? marked.parse(c) : c}</div>`;
             cont.appendChild(d);
-            cont.scrollTo({ top: cont.scrollHeight, behavior: 'smooth' });
+            const parent = document.getElementById('chat-container');
+            parent.scrollTo({ top: parent.scrollHeight, behavior: 'smooth' });
         }
 
-        function useT(t) {
-            const i = document.getElementById('user-input');
-            const data = {
-                'Makalah': 'Buatkan kerangka makalah lengkap tentang topik: ',
-                'Laporan': 'Bantu buatkan struktur laporan praktikum untuk: ',
-                'PPT': 'Buatkan poin-poin materi slide presentasi tentang: ',
-                'Revisi': 'Tolong perbaiki kalimat ini agar lebih formal & akademik: '
-            };
-            i.value = data[t];
-            i.focus();
-            if(window.innerWidth < 768) toggleMenu();
-        }
-
+        function quickAsk(text) { document.getElementById('user-input').value = text; document.getElementById('user-input').focus(); }
+        function createNewChat() { currentChatId = Date.now().toString(); document.getElementById('chat-messages').innerHTML = ''; document.getElementById('chat-messages').classList.add('hidden'); document.getElementById('welcome-screen').classList.remove('hidden'); renderH(); }
         function save() { localStorage.setItem('paryd_chats', JSON.stringify(allChats)); renderH(); }
         function renderH() {
             const l = document.getElementById('history-list'); l.innerHTML = '';
             Object.keys(allChats).sort().reverse().forEach(id => {
                 const d = document.createElement('div');
-                d.className = `p-3 text-[11px] rounded-xl cursor-pointer truncate ${id === currentChatId ? 'bg-purple-500/20 text-white font-bold' : 'text-gray-500 hover:bg-white/5'}`;
+                d.className = `p-3 px-4 text-[10px] rounded-xl cursor-pointer truncate ${id === currentChatId ? 'bg-purple-500/20 text-white font-bold' : 'text-gray-500 hover:bg-white/5'}`;
                 d.onclick = () => { 
                     currentChatId = id; 
-                    document.getElementById('chat-container').innerHTML = ''; 
+                    document.getElementById('welcome-screen').classList.add('hidden');
+                    const msgArea = document.getElementById('chat-messages');
+                    msgArea.innerHTML = ''; msgArea.classList.remove('hidden');
                     allChats[id].messages.forEach(m => addMsg(m.content, m.role === 'user' ? 'user' : 'ai')); 
-                    if(window.innerWidth < 768) toggleMenu(); 
                 };
-                d.innerHTML = `<i class="far fa-comment-dots mr-2 text-pink-500"></i> ${allChats[id].title}`;
+                d.innerHTML = `<i class="fas fa-history mr-2 opacity-30"></i> ${allChats[id].title}`;
                 l.appendChild(d);
             });
         }
-
-        function createNewChat() {
-            currentChatId = Date.now().toString();
-            document.getElementById('chat-container').innerHTML = `<div class="chat-bubble-ai p-4 max-w-[90%] text-sm">Chat baru dimulai. Tanya apa aja tentang materi makalah mu..</div>`;
-            renderH();
-        }
-
-        function clearAllHistory() {
-            allChats = {};
-            localStorage.removeItem('paryd_chats');
-            createNewChat();
-            toggleSettings();
-        }
-
-        function setRating(n) {
-            const stars = document.querySelectorAll('.rating-star');
-            stars.forEach((s, i) => { s.style.color = (i < n) ? '#facc15' : '#475569'; });
-            Swal.fire({ icon: 'success', title: 'Makasih yaa!', showConfirmButton: false, timer: 1000 });
-        }
-
-        document.getElementById('user-input').addEventListener('keypress', (e) => { if(e.key==='Enter') handleChat(); });
-        window.onload = renderH;
+        function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('hidden'); }
+        function toggleSettings() { document.getElementById('modal-settings').classList.toggle('hidden'); }
+        function clearAllHistory() { allChats = {}; localStorage.removeItem('paryd_chats'); createNewChat(); toggleSettings(); Swal.fire({title: 'Dibersihkan!', icon: 'success', background: '#0b0e1a', color: '#fff'}); }
+        function openAbout() { document.getElementById('modal-about').classList.remove('hidden'); }
+        function closeAbout() { document.getElementById('modal-about').classList.add('hidden'); }
+        function giveRating() { window.open(`https://wa.me/6289687783535?text=${encodeURIComponent("Halo Farid, saya mau kasih rating dan feedback untuk AI Paryds: ")}`); }
+        function useT(t) { quickAsk(t === 'Makalah' ? 'Buatkan kerangka makalah: ' : t === 'Laporan' ? 'Buatkan laporan praktikum: ' : t === 'PPT' ? 'Buat materi PPT: ' : 'Revisi kalimat ini: '); }
+        function calcTotal() { const b = parseInt(document.getElementById('service-select').value); const q = parseInt(document.getElementById('qty-input').value) || 1; document.getElementById('total-price').innerText = "Rp " + (b*q).toLocaleString('id-ID'); }
+        function orderViaWA() { const s = document.getElementById('service-select'); if(s.value != "0") window.open(`https://wa.me/6289687783535?text=Halo Paryds, saya mau order ${s.options[s.selectedIndex].text}`); }
+        document.getElementById('user-input').addEventListener('keypress', (e) => { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); handleChat(); } });
     </script>
 </body>
 </html>
