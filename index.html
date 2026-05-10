@@ -152,7 +152,9 @@
                         <p id="user-name" class="text-[10px] font-black text-white truncate uppercase tracking-tighter">Guest</p>
                         <div id="login-wrapper">
                             <div id="g_id_onload" 
-                                data-client_id="286833777579-obuimabinn4f22cse7hgjh4i7jg73m3o.apps.googleusercontent.com" 
+                                data-client_id="MASUKKAN_ID_CLIENT_LU_DI_SINI" 
+                                data-context="signin"
+                                data-ux_mode="popup"
                                 data-callback="handleCredentialResponse" 
                                 data-auto_prompt="false">
                             </div>
@@ -219,9 +221,7 @@
     </div>
 
     <script>
-        // API KEY BARU LU UDAH DI SINI
         const GROQ_API_KEY = "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";
-        
         let currentChatId = Date.now().toString();
         let allChats = JSON.parse(localStorage.getItem('paryd_chats')) || {};
 
@@ -244,7 +244,6 @@
             const greeting = document.getElementById('greeting-text');
             const logoutBtn = document.getElementById('btn-logout');
             const loginWrapper = document.getElementById('login-wrapper');
-
             if(user) {
                 avatar.innerHTML = `<img src="${user.picture}" class="w-full h-full object-cover">`;
                 name.innerText = user.name;
@@ -266,10 +265,6 @@
             renderH();
             const savedUser = JSON.parse(localStorage.getItem('paryds_user'));
             if(savedUser) updateAuthUI(savedUser);
-            
-            // //////////////////////////////////////////////////////
-            // TANDA: JANGAN LUPA UPDATE CLIENT ID DI HTML JUGA (BARIS 119)
-            // //////////////////////////////////////////////////////
         };
 
         async function handleChat() {
