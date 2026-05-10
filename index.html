@@ -183,12 +183,14 @@
             <div id="chat-messages" class="space-y-8 hidden"></div>
         </div>
 
-        <div class="p-6 md:p-10">
-            <div class="max-w-4xl mx-auto flex items-end gap-4 bg-[#161a2e] border border-white/5 p-3 rounded-2xl shadow-2xl">
-                <textarea id="user-input" rows="1" placeholder="Minta AI Paryds..." class="flex-1 bg-transparent px-4 py-3 text-sm text-white focus:outline-none resize-none max-h-40 leading-relaxed"></textarea>
-                <button onclick="handleChat()" class="w-12 h-12 bg-purple-600 hover:bg-purple-500 text-white rounded-xl flex items-center justify-center transition-all"><i class="fas fa-paper-plane"></i></button>
+        <div class="p-4 md:p-10 bg-gradient-to-t from-[#0b0e1a] via-[#0b0e1a] to-transparent">
+            <div class="max-w-4xl mx-auto flex items-end gap-3 bg-[#161a2e] border border-white/5 p-2 md:p-3 rounded-2xl shadow-2xl">
+                <textarea id="user-input" rows="1" placeholder="Minta AI Paryds..." class="flex-1 bg-transparent px-3 py-2 text-sm text-white focus:outline-none resize-none max-h-32 leading-relaxed"></textarea>
+                <button onclick="handleChat()" class="w-10 h-10 md:w-12 md:h-12 bg-purple-600 hover:bg-purple-500 text-white rounded-xl flex items-center justify-center transition-all shrink-0"><i class="fas fa-paper-plane text-xs md:text-base"></i></button>
             </div>
-            <p class="text-[9px] text-center text-gray-600 mt-6 font-bold tracking-[0.4em] uppercase opacity-40">© 2026 Ahmad Farid Ridho | Smart Academic Assistant</p>
+            <div class="text-center mt-4 pb-2">
+                <p class="text-[8px] md:text-[9px] text-gray-600 font-bold tracking-[0.2em] md:tracking-[0.4em] uppercase opacity-60">© 2026 Ahmad Farid Ridho | Smart Academic Assistant</p>
+            </div>
         </div>
     </main>
 
